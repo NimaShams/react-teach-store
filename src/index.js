@@ -6,13 +6,11 @@ import * as serviceWorker from './serviceWorker';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { ProductProvider } from './context/context';
 ReactDOM.render(
-  <React.StrictMode>
     <ProductProvider>
       <Router>
         <App />
       </Router>
-    </ProductProvider>
-  </React.StrictMode>,
+    </ProductProvider>,
   document.getElementById('root')
 );
 
