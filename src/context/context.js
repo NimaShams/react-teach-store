@@ -39,36 +39,103 @@ class ProductProvider extends Component {
     });
     //  featured products
     let featuredProducts = storeProducts.filter(item => item.featured === true);
-    this.setState({
-      storeProducts,
-      filteredProducts: storeProducts,
-      featuredProducts,
-      cart: this.getStorageCart(),
-      singleProduct: this.getStorageProduct(),
-      loading: false
-    });
+    this.setState(
+      {
+        storeProducts,
+        filteredProducts: storeProducts,
+        featuredProducts,
+        cart: this.getStorageCart(),
+        singleProduct: this.getStorageProduct(),
+        loading: false
+      },
+      () => {
+        this.addTotals();
+      }
+    );
   };
   // get cart from local storage
   getStorageCart = () => {
-    return [];
+    let cart;
+    if (localStorage.getItem("cart")) {
+      cart = JSON.parse(localStorage.getItem("cart"));
+    } else {
+      cart = [];
+    }
+    return cart;
   };
   // get product from local storage
   getStorageProduct = () => {
-    return {};
+    return localStorage.getItem('singleProduct') ?JSON.parse(localStorage.getItem('singleProduct')) :{}
   };
   // get totals
-  getTotals = () => {};
+  getTotals = () => {
+    let subTotal = 0;
+    let cartItems = 0;
+    this.state.cart.forEach(item => {
+      subTotal += item.total;
+      cartItems += item.count;
+    });
+
+    subTotal = parseFloat(subTotal.toFixed(2));
+    let tax = subTotal * 0.2;
+    tax = parseFloat(tax.toFixed(2));
+    let total = subTotal + tax;
+    total = parseFloat(total.toFixed(2));
+    return {
+      cartItems,
+      subTotal,
+      tax,
+      total
+    };
+  };
   //add totals
-  addTotals = () => {};
+  addTotals = () => {
+    const totals = this.getTotals();
+    this.setState({
+      cartItems: totals.cartItems,
+      cartSubTotal: totals.subTotal,
+      cartTax: totals.tax,
+      cartTotal: totals.total
+    });
+  };
   // sync storage
-  syncStorage = () => {};
+  syncStorage = () => {
+    localStorage.setItem("cart", JSON.stringify(this.state.cart));
+  };   
   //add to cart
   addToCart = id => {
-    console.log(`add to cart ${id}`);
+    let tempCart = [...this.state.cart];
+    let tempProducts = [...this.state.storeProducts];
+    let tempItem = tempCart.find(item => item.id === id);
+    if (!tempItem) {
+      tempItem = tempProducts.find(item => item.id === id);
+      let total = tempItem.price;
+      let cartItem = { ...tempItem, count: 1, total };
+      tempCart = [...tempCart, cartItem];
+    } else {
+      tempItem.count++;
+      tempItem.total = tempItem.price * tempItem.count;
+      tempItem.total = parseFloat(tempItem.total.toFixed(2));
+    }
+    this.setState(
+      () => {
+        return { cart: tempCart };
+      },
+      () => {
+        this.addTotals();
+        this.syncStorage();
+        this.openCart();
+      }
+    );
   };
   // set single product
   setSingleProduct = id => {
-    console.log(`set single product ${id}`);
+    let product = this.state.storeProducts.find(item => item.id === id);
+    localStorage.setItem('singleProduct',JSON.stringify(product))
+    this.setState({
+      singleProduct : {...product},
+      loading: false
+    })
   };
 
   // handle sidebar
