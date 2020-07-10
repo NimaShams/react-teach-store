@@ -9,6 +9,7 @@ export default function Product({ product }) {
     <ProductConsumer>
       {value => {
         const { addToCart, setSingleProduct } = value;
+
         return (
           <ProductWrapper className="col-10 mx-auto col-sm-8 col-md-6  col-lg-4 my-3">
             <div className="card">
